@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  smoke:
+  test:
     name: Проверка приложения
     runs-on: ubuntu-latest
     steps:
@@ -26,39 +26,8 @@ jobs:
       - name: Компиляция
         run: python -m compileall -q app.py auth.py config.py extensions.py models.py routes.py
 
-      - name: Дымовой тест
-        run: |
-          python - <<'PY'
-          from app import create_app
-
-          app = create_app()
-          client = app.test_client()
-
-          r = client.get('/auth/login')
-          assert r.status_code == 200, f'login: {r.status_code}'
-
-          r = client.post('/auth/register', data={
-              'username': 'demo-owner',
-              'password': 'demo-password',
-              'role': 'owner',
-              'full_name': 'Demo',
-          }, follow_redirects=True)
-          assert r.status_code == 200, f'register: {r.status_code}'
-
-          r = client.post('/auth/login', data={
-              'username': 'demo-owner',
-              'password': 'demo-password',
-          }, follow_redirects=True)
-          assert r.status_code == 200, f'login post: {r.status_code}'
-
-          r = client.get('/dashboard')
-          assert r.status_code == 200, f'dashboard: {r.status_code}'
-
-          r = client.get('/stats')
-          assert r.status_code == 200, f'stats: {r.status_code}'
-
-          print('OK: приложение поднялось, регистрация и вход работают')
-          PY
+      - name: Юнит-тесты
+        run: python -m unittest discover -s tests -t . -v
 
       - name: Убедиться, что база данных не попала в репозиторий
         run: |
