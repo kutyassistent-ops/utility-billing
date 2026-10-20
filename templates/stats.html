@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>📊 Дашборд статистики</h3>
+
+<!-- Фильтры -->
+<form method="get" action="{{ url_for('main.stats') }}" class="row g-3 mb-4">
+    <div class="col-md-4">
+        <label for="property_id" class="form-label">Объект</label>
+        <select name="property_id" id="property_id" class="form-select" onchange="this.form.submit()">
+            {% for p in properties %}
+                <option value="{{ p.id }}" {% if p.id == selected_property %}selected{% endif %}>
+                    {{ p.address }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="months" class="form-label">Период</label>
+        <select name="months" id="months" class="form-select" onchange="this.form.submit()">
+            <option value="6" {% if selected_months == 6 %}selected{% endif %}>Последние 6 месяцев</option>
+            <option value="12" {% if selected_months == 12 %}selected{% endif %}>Последние 12 месяцев</option>
+            <option value="0" {% if selected_months == 0 %}selected{% endif %}>Всё время</option>
+        </select>
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <a href="{{ url_for('main.stats') }}" class="btn btn-secondary">Сбросить</a>
+    </div>
+</form>
+
+<!-- Карточки-сводки -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Всего начислено</h5>
+                <p class="card-text display-6">{{ "%.2f"|format(data.summary.total_sum) }} ₽</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Среднее в месяц</h5>
+                <p class="card-text display-6">{{ "%.2f"|format(data.summary.avg_month) }} ₽</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Ср. расход воды (ГВ+ХВ)</h5>
+                <p class="card-text display-6">{{ "%.1f"|format(data.summary.avg_hot + data.summary.avg_cold) }} м³</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Ср. расход эл-ва</h5>
+                <p class="card-text display-6">{{ "%.1f"|format(data.summary.avg_el) }} кВт·ч</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Графики -->
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">Динамика начислений</div>
+            <div class="card-body">
+                <canvas id="totalsChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">Расход воды по месяцам</div>
+            <div class="card-body">
+                <canvas id="waterChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">Расход электроэнергии</div>
+            <div class="card-body">
+                <canvas id="elChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const labels = {{ data.labels|tojson }};
+    const totals = {{ data.totals|tojson }};
+    const hot = {{ data.hot_water|tojson }};
+    const cold = {{ data.cold_water|tojson }};
+    const el = {{ data.electricity|tojson }};
+
+    new Chart(document.getElementById('totalsChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Сумма, руб',
+                data: totals,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                tension: 0.1,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { callback: v => v + ' ₽' } } }
+        }
+    });
+
+    new Chart(document.getElementById('waterChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Горячая вода, м³',
+                    data: hot,
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Холодная вода, м³',
+                    data: cold,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top' } },
+            scales: { y: { beginAtZero: true, ticks: { callback: v => v + ' м³' } } }
+        }
+    });
+
+    new Chart(document.getElementById('elChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Электроэнергия, кВт·ч',
+                data: el,
+                backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { callback: v => v + ' кВт·ч' } } }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+# База данных с персональными данными — не в git
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+huita_bd.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Окружение
+.env
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

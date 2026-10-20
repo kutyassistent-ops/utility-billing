@@ -1,0 +1,23 @@
+# Нормализация переносов строк: в репозитории LF, в рабочей копии — по платформе.
+* text=auto
+
+*.md   text eol=lf
+*.py   text eol=lf
+*.php  text eol=lf
+*.js   text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.sql  text eol=lf
+*.sh   text eol=lf
+*.volt text eol=lf
+*.yml  text eol=lf
+
+*.ps1  text eol=crlf
+*.bat  text eol=crlf
+
+*.jpg  binary
+*.png  binary
+*.gif  binary
+*.zip  binary
+*.db   binary

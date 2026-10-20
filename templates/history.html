@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>История начислений</h3>
+{% if records %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>ГВ</th>
+            <th>ХВ</th>
+            <th>Эл</th>
+            <th>Итого (руб)</th>
+            <th>Статус</th>
+            <th>Кто внёс</th>
+            <th>Действие</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.date }}</td>
+            <td>{{ r.hot_water }}</td>
+            <td>{{ r.cool_water }}</td>
+            <td>{{ r.electricity }}</td>
+            <td>{{ "%.2f"|format(r.total) }}</td>
+            <td>
+                {% if r.paid %}
+                    <span class="badge bg-success">Оплачено</span>
+                {% else %}
+                    <span class="badge bg-danger">Не оплачено</span>
+                {% endif %}
+            </td>
+            <td>{{ r.entered_by }}</td>
+            <td>
+                {% if user_role == 'owner' and not r.paid %}
+                    <form method="post" action="{{ url_for('main.mark_paid', invoice_id=r.invoice_id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Подтвердить оплату этого счёта?')">✅ Оплачено</button>
+                    </form>
+                {% else %}
+                    <span class="text-muted">—</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-muted">Нет записей для этого объекта.</p>
+{% endif %}
+<a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Назад</a>
+{% endblock %}
