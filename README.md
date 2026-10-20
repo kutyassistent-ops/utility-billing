@@ -42,12 +42,12 @@ python app.py
 | Переменная | По умолчанию | Назначение |
 |---|---|---|
 | `SECRET_KEY` | `your-secret-key-change-in-production` | Ключ подписи сессий Flask |
-| `DB_PATH` | `huita_bd.db` | Путь к файлу базы |
+| `DB_PATH` | `billing.db` | Путь к файлу базы |
 
 ```bash
 # PowerShell
 $env:SECRET_KEY = "сгенерируйте-случайную-строку"
-$env:DB_PATH    = "data/huita_bd.db"
+$env:DB_PATH    = "data/billing.db"
 python app.py
 ```
 
@@ -137,7 +137,7 @@ python app.py
 
 ## База данных
 
-SQLite, файл `huita_bd.db` **не хранится в git** — в репозитории лежит
+SQLite, файл `billing.db` **не хранится в git** — в репозитории лежит
 только схема (`docs/schema.sql`).
 
 | Таблица | Что хранит |

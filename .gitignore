@@ -3,7 +3,7 @@
 *.db-journal
 *.sqlite
 *.sqlite3
-huita_bd.db
+billing.db
 
 # Python
 __pycache__/
